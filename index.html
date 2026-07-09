@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parâmetros Sherlock — o que a seguradora envia</title>
+<style>
+  :root {
+    --purple: #534AB7; --purple-light: #EEEDFE; --purple-mid: #AFA9EC;
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
+    --coral: #993C1D; --coral-light: #FAECE7; --coral-mid: #F0997B;
+    --amber: #854F0B; --amber-light: #FAEEDA; --amber-mid: #EF9F27;
+    --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #85B7EB;
+    --gray: #444441; --gray-light: #F1EFE8; --gray-mid: #B4B2A9;
+    --green: #3B6D11; --green-light: #EAF3DE; --green-mid: #97C459;
+    --red: #A32D2D; --red-light: #FCEBEB; --red-mid: #F09595;
+    --text: #2C2C2A; --text-sec: #5F5E5A; --border: #D3D1C7;
+    --bg: #ffffff; --bg-page: #F8F7F3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-page); color: var(--text); font-size: 14px; line-height: 1.6; }
+  .page { max-width: 1060px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  h2 { font-size: 16px; font-weight: 600; margin: 32px 0 4px; }
+  .subtitle { color: var(--text-sec); font-size: 13px; margin-bottom: 32px; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text-sec); margin: 36px 0 14px; padding-left: 2px; border-top: 1px solid var(--border); padding-top: 24px; }
+
+  /* WHEN BADGE */
+  .when { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; }
+  .when-once { background: var(--purple-light); color: var(--purple); }
+  .when-each { background: var(--teal-light); color: var(--teal); }
+
+  /* PARAM TABLE */
+  .param-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 13px; }
+  .param-table th { background: var(--gray-light); text-align: left; padding: 8px 12px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-sec); border-bottom: 1px solid var(--border); }
+  .param-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .param-table tr:last-child td { border-bottom: none; }
+  .param-name { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--blue); }
+  .param-type { font-family: monospace; font-size: 11px; color: var(--text-sec); white-space: nowrap; }
+  .req { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+  .req-sim { background: var(--teal-light); color: var(--teal); }
+  .req-nao { background: var(--gray-light); color: var(--gray); }
+  .param-desc { font-size: 12px; color: var(--text-sec); }
+  .param-ex { font-family: monospace; font-size: 11px; color: var(--coral); margin-top: 3px; }
+
+  /* CODE BLOCK */
+  .code-wrap { background: #1E1E2E; border-radius: 10px; padding: 20px 24px; margin: 16px 0 24px; overflow-x: auto; }
+  .code-wrap pre { font-family: monospace; font-size: 12px; line-height: 1.7; color: #CDD6F4; margin: 0; }
+  .c-key { color: #89B4FA; }
+  .c-str { color: #A6E3A1; }
+  .c-num { color: #FAB387; }
+  .c-bool { color: #F38BA8; }
+  .c-null { color: #9399B2; }
+  .c-comment { color: #6C7086; font-style: italic; }
+
+  /* NOTE */
+  .note { border-left: 3px solid var(--amber-mid); background: var(--amber-light); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: var(--amber); margin: 12px 0; }
+  .note-blue { border-left: 3px solid var(--blue-mid); background: var(--blue-light); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: var(--blue); margin: 12px 0; }
+  .note strong { color: inherit; }
+
+  /* RAMO TABS */
+  .ramo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 16px 0; }
+  .ramo-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--bg); }
+  .ramo-name { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .ramo-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .ramo-fields { display: flex; flex-direction: column; gap: 4px; }
+  .rf { font-size: 11px; font-family: monospace; padding: 3px 8px; border-radius: 5px; color: var(--teal); background: var(--teal-light); }
+  .rf-extra { color: var(--coral); background: var(--coral-light); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Parâmetros Sherlock — o que a seguradora precisa enviar</h1>
+  <p class="subtitle">Dois momentos distintos: configuração de onboarding (uma vez) e payload por sinistro (cada chamada)</p>
+
+  <!-- =========================================================== -->
+  <!-- PARTE 1: ONBOARDING -->
+  <!-- =========================================================== -->
+  <div class="section-title">Parte 1 — Configuração de onboarding (enviada uma vez, salva no tenant)</div>
+  <span class="when when-once">⚙ Enviado uma vez no cadastro</span>
+
+  <div class="note-blue">
+    Esses parâmetros são enviados pela seguradora durante o onboarding e ficam salvos em <code>dbProteoKnowledge.tenants</code>.
+    A partir daí, toda chamada de sinistro os herda automaticamente — a seguradora não precisa repetir nada.
+  </div>
+
+  <h2>1.1 — Identificação do tenant</h2>
+  <table class="param-table">
+    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
+    <tr>
+      <td><span class="param-name">tenant_id</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Identificador único da seguradora no sistema</div><div class="param-ex">ex: "seg-porto-001"</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">nome</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Nome da seguradora</div><div class="param-ex">ex: "Porto Seguro S.A."</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">cnpj</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">CNPJ da seguradora</div><div class="param-ex">ex: "61.198.164/0001-60"</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">api_key</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Chave de autenticação gerada pelo sistema Proteo no cadastro</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">ramos_contratados</span></td>
+      <td><span class="param-type">array[string]</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Ramos habilitados para essa seguradora</div><div class="param-ex">ex: ["auto", "vida", "residencial"]</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">contato_tecnico</span></td>
+      <td><span class="param-type">object</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Email e nome do responsável técnico para notificações</div><div class="param-ex">ex: { "nome": "João Silva", "email": "joao@seguradora.com.br" }</div></td>
+    </tr>
+  </table>
+
+  <h2>1.2 — Adapter de campos (mapa de-para)</h2>
+  <div class="note">
+    <strong>Só precisa enviar o que for diferente do canônico.</strong> Se a seguradora já usa os mesmos nomes de campo que o modelo canônico do Sherlock, essa seção fica vazia e não precisa ser enviada.
+  </div>
+  <table class="param-table">
+    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
+    <tr>
+      <td><span class="param-name">adapter.formato_entrada</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-nao">Não</span></td>
+      <td><div class="param-desc">Formato dos dados enviados pela seguradora</div><div class="param-ex">ex: "json" | "xml" | "csv" — padrão: "json"</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">adapter.mapa_campos</span></td>
+      <td><span class="param-type">object</span></td>
+      <td><span class="req req-nao">Não</span></td>
+      <td><div class="param-desc">Mapa de campo deles → campo canônico. Só os que diferem.</div><div class="param-ex">ex: { "end_segurado": "insured.address", "dt_sinistro": "claim.occurredAt" }</div></td>
+    </tr>
+  </table>
+
+  <h2>1.3 — Regras ativas por ramo</h2>
+  <div class="note-blue">
+    As regras do catálogo ficam <strong>todas ativas por padrão</strong> para cada ramo contratado.
+    A seguradora só informa o que quer desligar ou adicionar como extra.
+  </div>
+  <table class="param-table">
+    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
+    <tr>
+      <td><span class="param-name">regras.desativar</span></td>
+      <td><span class="param-type">array[string]</span></td>
+      <td><span class="req req-nao">Não</span></td>
+      <td><div class="param-desc">IDs de regras do catálogo que não se aplicam a essa seguradora</div><div class="param-ex">ex: ["regra-esporte-radical", "regra-bo-endereco"]</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">regras.extras</span></td>
+      <td><span class="param-type">array[object]</span></td>
+      <td><span class="req req-nao">Não</span></td>
+      <td><div class="param-desc">Regras específicas dessa seguradora que não existem no catálogo</div><div class="param-ex">ex: [{ "nome": "Limite regional SP", "primitiva": "comparar", "campo": "claim.location.uf", "operador": "igual", "valor": "SP" }]</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">regras.tolerancias</span></td>
+      <td><span class="param-type">object</span></td>
+      <td><span class="req req-nao">Não</span></td>
+      <td><div class="param-desc">Parâmetros numéricos das regras que têm threshold ajustável</div><div class="param-ex">ex: { "distancia_endereco_bo_km": 5, "janela_atraso_aviso_dias": 30 }</div></td>
+    </tr>
+  </table>
+
+  <h2>1.4 — Condições gerais (upload por produto)</h2>
+  <table class="param-table">
+    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
+    <tr>
+      <td><span class="param-name">condicoes_gerais[].ramo</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Ramo ao qual esse documento de condições pertence</div><div class="param-ex">ex: "auto"</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">condicoes_gerais[].produto_id</span></td>
+      <td><span class="param-type">string</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Identificador do produto/apólice dentro do ramo</div><div class="param-ex">ex: "auto-premium-v2"</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">condicoes_gerais[].arquivo</span></td>
+      <td><span class="param-type">file (PDF)</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">PDF das condições gerais. O Sherlock indexa para RAG automaticamente.</div></td>
+    </tr>
+    <tr>
+      <td><span class="param-name">condicoes_gerais[].vigencia</span></td>
+      <td><span class="param-type">object</span></td>
+      <td><span class="req req-sim">Sim</span></td>
+      <td><div class="param-desc">Período de validade dessas condições</div><div class="param-ex">ex: { "inicio": "2024-01-01", "fim": "2024-12-31" }</div></td>
+    </tr>
+  </table>
+
+  <!-- =========================================================== -->
+  <!-- PARTE 2: PAYLOAD POR SINISTRO -->
+  <!-- =========================================================== -->
+  <div class="section-title">Parte 2 — Payload por sinistro (enviado a cada chamada à API)</div>
+  <span class="when when-each">📨 Enviado a cada sinistro</span>
+
+  <div class="note-blue">
+    Envelope fixo + <code>ramo_payload</code> variável por ramo. O envelope é sempre igual — a seguradora integra uma vez.
+    Só o <code>ramo_payload</code> muda dependendo do ramo do sinistro.
+  </div>
+
+  <h2>2.1 — Envelope fixo (igual para todos os ramos)</h2>
+
+  <div class="code-wrap"><pre><span class="c-comment">// POST /api/v1/sherlock/analisar</span>
+{
+  <span class="c-key">"tenant"</span>: {
+    <span class="c-key">"tenant_id"</span>: <span class="c-str">"seg-porto-001"</span>,           <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"ramo"</span>: <span class="c-str">"auto"</span>,                        <span class="c-comment">// obrigatório — define qual ramo_payload esperar</span>
+    <span class="c-key">"produto_id"</span>: <span class="c-str">"auto-premium-v2"</span>        <span class="c-comment">// obrigatório — qual produto/apólice</span>
+  },
+
+  <span class="c-key">"apolice"</span>: {
+    <span class="c-key">"numero"</span>: <span class="c-str">"AP-2024-00123"</span>,           <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"vigencia"</span>: {
+      <span class="c-key">"inicio"</span>: <span class="c-str">"2024-01-01"</span>,             <span class="c-comment">// obrigatório</span>
+      <span class="c-key">"fim"</span>: <span class="c-str">"2024-12-31"</span>                <span class="c-comment">// obrigatório</span>
+    },
+    <span class="c-key">"coberturas"</span>: [<span class="c-str">"colisao"</span>, <span class="c-str">"roubo"</span>, <span class="c-str">"incendio"</span>],  <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"limite_maximo"</span>: <span class="c-num">120000.00</span>,           <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"franquia"</span>: <span class="c-num">2500.00</span>,                 <span class="c-comment">// opcional</span>
+    <span class="c-key">"exclusoes"</span>: [<span class="c-str">"esporte_radical"</span>]        <span class="c-comment">// opcional — complementa condições gerais</span>
+  },
+
+  <span class="c-key">"segurado"</span>: {
+    <span class="c-key">"nome"</span>: <span class="c-str">"Maria Silva"</span>,               <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"cpf"</span>: <span class="c-str">"***.***.***-**"</span>,             <span class="c-comment">// obrigatório (mascarado, não armazenar em claro)</span>
+    <span class="c-key">"endereco"</span>: <span class="c-str">"Rua das Flores, 123, SP"</span>  <span class="c-comment">// obrigatório para checagem geo</span>
+  },
+
+  <span class="c-key">"sinistro"</span>: {
+    <span class="c-key">"id"</span>: <span class="c-str">"SIN-2024-99887"</span>,              <span class="c-comment">// obrigatório — id da seguradora</span>
+    <span class="c-key">"data_ocorrencia"</span>: <span class="c-str">"2024-09-15T14:30:00"</span>, <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"data_aviso"</span>: <span class="c-str">"2024-09-16T09:00:00"</span>,    <span class="c-comment">// obrigatório — para checagem de prazo</span>
+    <span class="c-key">"relato_segurado"</span>: <span class="c-str">"Colidi com outro carro na Av. Paulista..."</span>, <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"valor_reclamado"</span>: <span class="c-num">18500.00</span>,           <span class="c-comment">// obrigatório</span>
+    <span class="c-key">"local"</span>: {
+      <span class="c-key">"logradouro"</span>: <span class="c-str">"Av. Paulista, 900"</span>,
+      <span class="c-key">"cidade"</span>: <span class="c-str">"São Paulo"</span>,
+      <span class="c-key">"uf"</span>: <span class="c-str">"SP"</span>,
+      <span class="c-key">"lat"</span>: <span class="c-num">-23.5632</span>, <span class="c-key">"lng"</span>: <span class="c-num">-46.6543</span>   <span class="c-comment">// opcional, melhora checagem geo</span>
+    }
+  },
+
+  <span class="c-key">"documentos"</span>: [                          <span class="c-comment">// opcional — ids já extraídos pelo Extrator</span>
+    {
+      <span class="c-key">"tipo"</span>: <span class="c-str">"boletim_ocorrencia"</span>,
+      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d5"</span>  <span class="c-comment">// _id em documentos_extraidos</span>
+    },
+    {
+      <span class="c-key">"tipo"</span>: <span class="c-str">"laudo_medico"</span>,
+      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d6"</span>
+    }
+  ],
+
+  <span class="c-key">"ramo_payload"</span>: { <span class="c-comment">// ← varia por ramo — ver seção 2.2</span>
+    <span class="c-comment">// campos específicos do ramo auto, vida, viagem etc.</span>
+  }
+}</pre></div>
+
+  <h2>2.2 — ramo_payload por ramo</h2>
+  <p style="font-size:12px;color:var(--text-sec);margin-bottom:16px;">
+    Apenas o bloco <code>ramo_payload</code> muda. O resto do envelope é sempre igual.
+  </p>
+
+  <div class="ramo-grid">
+
+    <div class="ramo-card">
+      <div class="ramo-name">
+        🚗 Auto
+        <span class="ramo-badge" style="background:var(--teal-light);color:var(--teal)">ramo: "auto"</span>
+      </div>
+      <div class="ramo-fields">
+        <div class="rf">veiculo.placa</div>
+        <div class="rf">veiculo.chassi</div>
+        <div class="rf">veiculo.modelo</div>
+        <div class="rf">veiculo.ano</div>
+        <div class="rf">veiculo.km_atual</div>
+        <div class="rf">condutor.nome</div>
+        <div class="rf">condutor.cnh</div>
+        <div class="rf">condutor.categoria_cnh</div>
+        <div class="rf">condutor.validade_cnh</div>
+        <div class="rf rf-extra">bo_numero  ← cruzamento endereço</div>
+        <div class="rf rf-extra">terceiros [ ]  ← nome, cpf, placa</div>
+        <div class="rf rf-extra">tipo_sinistro: colisao|roubo|incendio</div>
+      </div>
+    </div>
+
+    <div class="ramo-card">
+      <div class="ramo-name">
+        ❤️ Vida / Saúde
+        <span class="ramo-badge" style="background:var(--purple-light);color:var(--purple)">ramo: "vida"</span>
+      </div>
+      <div class="ramo-fields">
+        <div class="rf">segurado.data_nascimento</div>
+        <div class="rf">segurado.profissao</div>
+        <div class="rf">beneficiario.nome</div>
+        <div class="rf">beneficiario.cpf</div>
+        <div class="rf">beneficiario.parentesco</div>
+        <div class="rf rf-extra">cid10  ← para exclusão por doença prévia</div>
+        <div class="rf rf-extra">data_obito  ← se aplicável</div>
+        <div class="rf rf-extra">causa_morte</div>
+        <div class="rf rf-extra">carencia_cumprida: true|false</div>
+        <div class="rf rf-extra">atividade_risco: true|false  ← exclusão</div>
+      </div>
+    </div>
+
+    <div class="ramo-card">
+      <div class="ramo-name">
+        ✈️ Viagem
+        <span class="ramo-badge" style="background:var(--blue-light);color:var(--blue)">ramo: "viagem"</span>
+      </div>
+      <div class="ramo-fields">
+        <div class="rf">viagem.destino</div>
+        <div class="rf">viagem.data_embarque</div>
+        <div class="rf">viagem.data_retorno</div>
+        <div class="rf">viagem.companhia_aerea</div>
+        <div class="rf">viagem.numero_voo</div>
+        <div class="rf rf-extra">tipo_sinistro: bagagem|cancelamento|medico</div>
+        <div class="rf rf-extra">comprovante_extravio_ref  ← extrator_ref</div>
+        <div class="rf rf-extra">valor_bagagem_declarado</div>
+        <div class="rf rf-extra">esporte_radical: true|false  ← exclusão</div>
+      </div>
+    </div>
+
+    <div class="ramo-card">
+      <div class="ramo-name">
+        🏠 Residencial
+        <span class="ramo-badge" style="background:var(--amber-light);color:var(--amber)">ramo: "residencial"</span>
+      </div>
+      <div class="ramo-fields">
+        <div class="rf">imovel.tipo: casa|apartamento</div>
+        <div class="rf">imovel.endereco_completo</div>
+        <div class="rf">imovel.area_m2</div>
+        <div class="rf">imovel.ocupacao: proprio|alugado</div>
+        <div class="rf rf-extra">tipo_sinistro: incendio|roubo|alagamento</div>
+        <div class="rf rf-extra">bo_numero  ← para roubo/furto</div>
+        <div class="rf rf-extra">laudo_pericia_ref  ← extrator_ref</div>
+        <div class="rf rf-extra">imovel_habitado_na_ocorrencia: true|false</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- PARTE 3: RESPOSTA DO SHERLOCK -->
+  <!-- =========================================================== -->
+  <div class="section-title">Parte 3 — O que o Sherlock devolve</div>
+  <span class="when when-each">📬 Resposta de cada análise</span>
+
+  <div class="code-wrap"><pre>{
+  <span class="c-key">"sinistro_id"</span>: <span class="c-str">"SIN-2024-99887"</span>,
+  <span class="c-key">"veredito"</span>: <span class="c-str">"negado"</span>,           <span class="c-comment">// coberto | negado | pendente</span>
+  <span class="c-key">"confianca"</span>: <span class="c-num">0.94</span>,              <span class="c-comment">// 0 a 1 — score do modelo</span>
+
+  <span class="c-key">"checagens"</span>: [
+    {
+      <span class="c-key">"regra"</span>: <span class="c-str">"vigencia-apolice"</span>,
+      <span class="c-key">"resultado"</span>: <span class="c-str">"aprovado"</span>,
+      <span class="c-key">"motivo"</span>: <span class="c-str">"Data do sinistro dentro da vigência da apólice"</span>
+    },
+    {
+      <span class="c-key">"regra"</span>: <span class="c-str">"esporte-radical-exclusao"</span>,
+      <span class="c-key">"resultado"</span>: <span class="c-str">"reprovado"</span>,
+      <span class="c-key">"motivo"</span>: <span class="c-str">"Relato do segurado indica prática de motocross, coberta pela exclusão §4.2 das condições gerais"</span>,
+      <span class="c-key">"clausula_ref"</span>: <span class="c-str">"§4.2 — Exclusões por atividade de risco"</span>
+    },
+    {
+      <span class="c-key">"regra"</span>: <span class="c-str">"valor-limite"</span>,
+      <span class="c-key">"resultado"</span>: <span class="c-str">"aprovado"</span>,
+      <span class="c-key">"motivo"</span>: <span class="c-str">"Valor reclamado R$18.500 dentro do limite de R$120.000"</span>
+    }
+  ],
+
+  <span class="c-key">"documentos_analisados"</span>: [
+    {
+      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d5"</span>,
+      <span class="c-key">"tipo"</span>: <span class="c-str">"boletim_ocorrencia"</span>,
+      <span class="c-key">"valido"</span>: <span class="c-bool">true</span>,
+      <span class="c-key">"inconsistencias"</span>: [<span class="c-str">"Endereço no BO difere 8km do endereço do sinistro"</span>]
+    }
+  ],
+
+  <span class="c-key">"auditoria"</span>: {
+    <span class="c-key">"modelo_versao"</span>: <span class="c-str">"sherlock-v2.1"</span>,
+    <span class="c-key">"config_versao"</span>: <span class="c-str">"seg-porto-001-v3"</span>,
+    <span class="c-key">"condicoes_gerais_ref"</span>: <span class="c-str">"auto-premium-v2-2024"</span>,
+    <span class="c-key">"processado_em"</span>: <span class="c-str">"2024-09-16T09:05:12Z"</span>,
+    <span class="c-key">"duracao_ms"</span>: <span class="c-num">1843</span>
+  }
+}</pre></div>
+
+  <div class="note">
+    <strong>Reprodutibilidade:</strong> Os campos <code>modelo_versao</code> e <code>config_versao</code> garantem que uma negativa pode ser reavaliada meses depois com exatamente a mesma configuração — essencial para disputas e auditorias regulatórias.
+  </div>
+
+</div>
+</body>
+</html>
