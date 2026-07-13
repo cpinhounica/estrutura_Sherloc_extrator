@@ -1,414 +1,739 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parâmetros Sherlock — o que a seguradora envia</title>
+<title>Sherlock + Extrator — Planta Multi-Tenant</title>
 <style>
-  :root {
-    --purple: #534AB7; --purple-light: #EEEDFE; --purple-mid: #AFA9EC;
-    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
-    --coral: #993C1D; --coral-light: #FAECE7; --coral-mid: #F0997B;
-    --amber: #854F0B; --amber-light: #FAEEDA; --amber-mid: #EF9F27;
-    --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #85B7EB;
-    --gray: #444441; --gray-light: #F1EFE8; --gray-mid: #B4B2A9;
-    --green: #3B6D11; --green-light: #EAF3DE; --green-mid: #97C459;
-    --red: #A32D2D; --red-light: #FCEBEB; --red-mid: #F09595;
-    --text: #2C2C2A; --text-sec: #5F5E5A; --border: #D3D1C7;
-    --bg: #ffffff; --bg-page: #F8F7F3;
+:root{
+  --bg:#F4F6F8; --bg-dot:rgba(43,95,224,.10);
+  --surface:#FFFFFF; --surface-2:#EBEFF3; --surface-3:#E1E6EC;
+  --ink:#161B22; --ink-soft:#4B5568; --ink-faint:#7C8798;
+  --border:#D7DCE2; --border-strong:#B9C2CC;
+  --accent:#2B5FE0; --accent-soft:#E8EEFC; --accent-ink:#1A3A8F;
+  --keep:#2F7A4F; --keep-soft:#E7F3EB;
+  --adjust:#966016; --adjust-soft:#FBF0DD;
+  --new:#B54A2C; --new-soft:#FBEAE3;
+  --risk:#B23A3A; --risk-soft:#FBE9E9;
+  --shared:#6B4FA0; --shared-soft:#EFEAFA;
+  --mono:"SF Mono","Cascadia Code","JetBrains Mono",ui-monospace,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 6px 20px rgba(20,30,50,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10141B; --bg-dot:rgba(108,147,245,.08);
+    --surface:#161C26; --surface-2:#1D2431; --surface-3:#252D3B;
+    --ink:#E7ECF2; --ink-soft:#9AA7B9; --ink-faint:#6B7688;
+    --border:#2A313D; --border-strong:#3A4353;
+    --accent:#7B9DF7; --accent-soft:#1C2A4D; --accent-ink:#BBD0FF;
+    --keep:#5FC28B; --keep-soft:#17301F;
+    --adjust:#E3AC53; --adjust-soft:#382A10;
+    --new:#E58A69; --new-soft:#3A2015;
+    --risk:#E17878; --risk-soft:#3A1818;
+    --shared:#B4A0E8; --shared-soft:#251E3A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.35);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-page); color: var(--text); font-size: 14px; line-height: 1.6; }
-  .page { max-width: 1060px; margin: 0 auto; padding: 40px 24px 80px; }
-  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-  h2 { font-size: 16px; font-weight: 600; margin: 32px 0 4px; }
-  .subtitle { color: var(--text-sec); font-size: 13px; margin-bottom: 32px; }
-  .section-title { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text-sec); margin: 36px 0 14px; padding-left: 2px; border-top: 1px solid var(--border); padding-top: 24px; }
+}
+:root[data-theme="dark"]{
+  --bg:#10141B; --bg-dot:rgba(108,147,245,.08);
+  --surface:#161C26; --surface-2:#1D2431; --surface-3:#252D3B;
+  --ink:#E7ECF2; --ink-soft:#9AA7B9; --ink-faint:#6B7688;
+  --border:#2A313D; --border-strong:#3A4353;
+  --accent:#7B9DF7; --accent-soft:#1C2A4D; --accent-ink:#BBD0FF;
+  --keep:#5FC28B; --keep-soft:#17301F;
+  --adjust:#E3AC53; --adjust-soft:#382A10;
+  --new:#E58A69; --new-soft:#3A2015;
+  --risk:#E17878; --risk-soft:#3A1818;
+  --shared:#B4A0E8; --shared-soft:#251E3A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F8; --bg-dot:rgba(43,95,224,.10);
+  --surface:#FFFFFF; --surface-2:#EBEFF3; --surface-3:#E1E6EC;
+  --ink:#161B22; --ink-soft:#4B5568; --ink-faint:#7C8798;
+  --border:#D7DCE2; --border-strong:#B9C2CC;
+  --accent:#2B5FE0; --accent-soft:#E8EEFC; --accent-ink:#1A3A8F;
+  --keep:#2F7A4F; --keep-soft:#E7F3EB;
+  --adjust:#966016; --adjust-soft:#FBF0DD;
+  --new:#B54A2C; --new-soft:#FBEAE3;
+  --risk:#B23A3A; --risk-soft:#FBE9E9;
+  --shared:#6B4FA0; --shared-soft:#EFEAFA;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 6px 20px rgba(20,30,50,.05);
+}
 
-  /* WHEN BADGE */
-  .when { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; }
-  .when-once { background: var(--purple-light); color: var(--purple); }
-  .when-each { background: var(--teal-light); color: var(--teal); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans);
+  background:
+    radial-gradient(var(--bg-dot) 1px, transparent 1px) 0 0/22px 22px,
+    var(--bg);
+  color:var(--ink);
+  font-size:14.5px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--mono); font-weight:700; letter-spacing:-.01em; text-wrap:balance; color:var(--ink)}
+code,.mono{font-family:var(--mono)}
+p{color:var(--ink-soft); margin:0 0 12px; max-width:70ch}
+a{color:var(--accent)}
+::selection{background:var(--accent-soft); color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
 
-  /* PARAM TABLE */
-  .param-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 13px; }
-  .param-table th { background: var(--gray-light); text-align: left; padding: 8px 12px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-sec); border-bottom: 1px solid var(--border); }
-  .param-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .param-table tr:last-child td { border-bottom: none; }
-  .param-name { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--blue); }
-  .param-type { font-family: monospace; font-size: 11px; color: var(--text-sec); white-space: nowrap; }
-  .req { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
-  .req-sim { background: var(--teal-light); color: var(--teal); }
-  .req-nao { background: var(--gray-light); color: var(--gray); }
-  .param-desc { font-size: 12px; color: var(--text-sec); }
-  .param-ex { font-family: monospace; font-size: 11px; color: var(--coral); margin-top: 3px; }
+/* ===== SHELL ===== */
+.shell{display:grid; grid-template-columns:248px 1fr; min-height:100vh}
+@media (max-width:920px){.shell{grid-template-columns:1fr}}
 
-  /* CODE BLOCK */
-  .code-wrap { background: #1E1E2E; border-radius: 10px; padding: 20px 24px; margin: 16px 0 24px; overflow-x: auto; }
-  .code-wrap pre { font-family: monospace; font-size: 12px; line-height: 1.7; color: #CDD6F4; margin: 0; }
-  .c-key { color: #89B4FA; }
-  .c-str { color: #A6E3A1; }
-  .c-num { color: #FAB387; }
-  .c-bool { color: #F38BA8; }
-  .c-null { color: #9399B2; }
-  .c-comment { color: #6C7086; font-style: italic; }
+.rail{
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  padding:22px 16px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+@media (max-width:920px){.rail{position:static; height:auto; border-right:none; border-bottom:1px solid var(--border)}}
 
-  /* NOTE */
-  .note { border-left: 3px solid var(--amber-mid); background: var(--amber-light); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: var(--amber); margin: 12px 0; }
-  .note-blue { border-left: 3px solid var(--blue-mid); background: var(--blue-light); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: var(--blue); margin: 12px 0; }
-  .note strong { color: inherit; }
+.rail-brand{display:flex; align-items:baseline; gap:8px; padding:2px 6px 18px; border-bottom:1px solid var(--border); margin-bottom:14px}
+.rail-brand .dot{width:8px;height:8px;border-radius:2px;background:var(--accent); transform:rotate(45deg); flex-shrink:0}
+.rail-brand b{font-family:var(--mono); font-size:13.5px; letter-spacing:.01em}
+.rail-brand span{font-size:10.5px; color:var(--ink-faint); font-family:var(--mono)}
 
-  /* RAMO TABS */
-  .ramo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 16px 0; }
-  .ramo-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--bg); }
-  .ramo-name { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .ramo-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-  .ramo-fields { display: flex; flex-direction: column; gap: 4px; }
-  .rf { font-size: 11px; font-family: monospace; padding: 3px 8px; border-radius: 5px; color: var(--teal); background: var(--teal-light); }
-  .rf-extra { color: var(--coral); background: var(--coral-light); }
+.rail-nav{display:flex; flex-direction:column; gap:2px}
+.rail-item{
+  font-family:var(--mono); font-size:12.3px; text-align:left; background:none; border:none; cursor:pointer;
+  color:var(--ink-soft); padding:9px 10px; border-radius:6px; display:flex; gap:9px; align-items:baseline;
+  width:100%;
+}
+.rail-item .n{color:var(--ink-faint); font-size:10.5px}
+.rail-item:hover{background:var(--surface-2); color:var(--ink)}
+.rail-item.active{background:var(--accent-soft); color:var(--accent-ink); font-weight:700}
+.rail-item.active .n{color:var(--accent-ink)}
 
-  hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.rail-foot{margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10.8px; color:var(--ink-faint); font-family:var(--mono); line-height:1.7}
+
+/* ===== MAIN ===== */
+main{padding:40px 48px 90px; max-width:1080px}
+@media (max-width:640px){main{padding:28px 18px 70px}}
+.page{display:none}
+.page.active{display:block; animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)}}
+
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:8px}
+.eyebrow::before{content:""; width:16px; height:1px; background:var(--accent)}
+h1.pagetitle{font-size:26px; margin:0 0 10px}
+.lede{font-size:15px; color:var(--ink-soft); max-width:62ch; margin-bottom:30px}
+
+h2.sec{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:38px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border)}
+h2.sec:first-of-type{margin-top:0}
+h3.sub{font-size:15.5px; margin:0 0 8px; color:var(--ink)}
+
+/* ===== CALLOUTS ===== */
+.callout{border-radius:8px; padding:16px 18px; margin:16px 0; border:1px solid; font-size:13.3px}
+.callout p{margin-bottom:8px; color:inherit; opacity:.92}
+.callout p:last-child{margin-bottom:0}
+.callout .ct{font-family:var(--mono); font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; display:flex; align-items:center; gap:7px}
+.callout.fix{background:var(--new-soft); border-color:color-mix(in srgb, var(--new) 35%, transparent); color:var(--ink)}
+.callout.fix .ct{color:var(--new)}
+.callout.info{background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 35%, transparent); color:var(--ink)}
+.callout.info .ct{color:var(--accent-ink)}
+.callout.ok{background:var(--keep-soft); border-color:color-mix(in srgb, var(--keep) 35%, transparent); color:var(--ink)}
+.callout.ok .ct{color:var(--keep)}
+
+/* ===== STATUS LEGEND / PILLS ===== */
+.legend{display:flex; flex-wrap:wrap; gap:8px 18px; padding:13px 16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:24px}
+.legend .li{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-soft); font-family:var(--mono)}
+.legend .sw{width:10px;height:10px;border-radius:2.5px; flex-shrink:0}
+.pill{display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:10.8px; font-weight:700; padding:3px 8px; border-radius:20px; letter-spacing:.01em; white-space:nowrap}
+.pill.keep{background:var(--keep-soft); color:var(--keep)}
+.pill.adjust{background:var(--adjust-soft); color:var(--adjust)}
+.pill.new{background:var(--new-soft); color:var(--new)}
+.pill.risk{background:var(--risk-soft); color:var(--risk)}
+.pill.shared{background:var(--shared-soft); color:var(--shared)}
+
+/* ===== CARDS / GRID ===== */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px; position:relative}
+.card::before{content:""; position:absolute; top:10px; left:10px; width:7px; height:7px; border-top:1.5px solid var(--border-strong); border-left:1.5px solid var(--border-strong)}
+.card::after{content:""; position:absolute; bottom:10px; right:10px; width:7px; height:7px; border-bottom:1.5px solid var(--border-strong); border-right:1.5px solid var(--border-strong)}
+.card-h{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px}
+.card-h h3{font-size:14.5px; margin:0; font-family:var(--mono)}
+.svc-tag{font-family:var(--mono); font-size:10px; padding:2px 8px; border-radius:4px; letter-spacing:.03em}
+.svc-tag.extrator{background:var(--adjust-soft); color:var(--adjust)}
+.svc-tag.sherlock{background:var(--accent-soft); color:var(--accent-ink)}
+
+.flist{display:flex; flex-direction:column; gap:5px; margin:10px 0}
+.frow{display:flex; gap:9px; align-items:flex-start; font-size:12.6px; padding:5px 8px; border-radius:5px; background:var(--surface-2)}
+.frow .mk{font-size:12px; flex-shrink:0; margin-top:1px}
+.frow.y .mk{color:var(--keep)}
+.frow.n .mk{color:var(--new)}
+.frow span{color:var(--ink-soft)}
+.frow code{color:var(--ink); font-size:11.6px}
+
+/* ===== TABLES ===== */
+.twrap{overflow-x:auto; border:1px solid var(--border); border-radius:9px; margin:14px 0}
+table{width:100%; border-collapse:collapse; font-size:12.8px; background:var(--surface)}
+th{background:var(--surface-2); text-align:left; padding:9px 13px; font-family:var(--mono); font-size:10.6px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); border-bottom:1px solid var(--border); white-space:nowrap}
+td{padding:10px 13px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--ink-soft)}
+tr:last-child td{border-bottom:none}
+td code, td .path{font-family:var(--mono); font-size:11.7px; color:var(--ink); white-space:nowrap}
+td.status{white-space:nowrap}
+
+/* ===== CODE BLOCK ===== */
+.codeblock{background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:16px 18px; margin:14px 0; overflow-x:auto}
+.codeblock pre{margin:0; font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink)}
+.codeblock .k{color:var(--accent-ink)}
+.codeblock .s{color:var(--keep)}
+.codeblock .n{color:var(--new)}
+.codeblock .c{color:var(--ink-faint); font-style:italic}
+
+/* ===== FLOW DIAGRAM ===== */
+.flow{display:flex; flex-direction:column; align-items:center; gap:0; margin:20px 0}
+.fnode{
+  background:var(--surface); border:1.4px solid var(--border-strong); border-radius:9px;
+  padding:12px 18px; text-align:center; font-size:12.6px; max-width:420px; box-shadow:var(--shadow);
+}
+.fnode b{display:block; font-family:var(--mono); font-size:12.6px; margin-bottom:3px}
+.fnode span{color:var(--ink-soft); font-size:11.6px}
+.fnode.spine{border-color:var(--shared); background:var(--shared-soft)}
+.fnode.spine b{color:var(--shared)}
+.flink{width:1.6px; height:26px; background:var(--border-strong); position:relative}
+.flink::after{content:""; position:absolute; bottom:-1px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid var(--border-strong)}
+
+.lanes{display:grid; grid-template-columns:1fr 1fr; gap:26px; width:100%; max-width:920px; margin-top:4px}
+@media (max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{display:flex; flex-direction:column; align-items:center}
+.lane-head{font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:14px}
+.lane-head.a{background:var(--adjust-soft); color:var(--adjust)}
+.lane-head.b{background:var(--accent-soft); color:var(--accent-ink)}
+.lane .fnode{width:100%}
+.lane .flink{height:22px}
+.lane .fnode.hi{border-color:var(--new); background:var(--new-soft)}
+.lane .fnode.hi b{color:var(--new)}
+.lane .fnode.ok2{border-color:var(--keep); background:var(--keep-soft)}
+.lane .fnode.ok2 b{color:var(--keep)}
+
+.converge{display:flex; gap:26px; width:100%; max-width:920px; justify-content:center}
+@media (max-width:760px){.converge{flex-direction:column; align-items:center}}
+.converge .flink{margin:0 auto}
+
+/* ===== TIMELINE (fases) ===== */
+.tl{display:flex; flex-direction:column}
+.tlrow{display:flex; gap:0}
+.tlnum{width:44px; flex-shrink:0; display:flex; flex-direction:column; align-items:center}
+.tlbadge{width:30px; height:30px; border-radius:7px; background:var(--surface); border:1.4px solid var(--border-strong); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:12px; flex-shrink:0}
+.tlbar{flex:1; width:1.6px; background:var(--border); margin:5px 0}
+.tlbody{flex:1; padding:0 0 30px 16px}
+.tlhead{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px}
+.tlhead h4{margin:0; font-size:14.5px}
+.tltime{font-family:var(--mono); font-size:11px; color:var(--ink-faint)}
+
+/* ===== RULE EXAMPLE CARDS ===== */
+.rulecard{border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:10px}
+.rulecard-h{background:var(--surface-2); padding:8px 14px; font-family:var(--mono); font-size:11.5px; display:flex; justify-content:space-between; gap:10px; color:var(--ink-soft)}
+.rulecard-b{padding:11px 14px; font-size:12.6px; background:var(--surface)}
+.rulecard-b .kv{display:grid; grid-template-columns:110px 1fr; gap:4px 10px; font-size:12px}
+.rulecard-b .kv b{font-family:var(--mono); color:var(--ink-faint); font-weight:600; font-size:10.8px; text-transform:uppercase; letter-spacing:.03em}
+.rulecard-b .kv span{color:var(--ink)}
+
+/* ===== GLOSSÁRIO ===== */
+.gloss-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px}
+@media (max-width:700px){.gloss-grid{grid-template-columns:1fr}}
+.gterm{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:13px 16px}
+.gterm b{display:block; font-family:var(--mono); font-size:13px; color:var(--accent-ink); margin-bottom:4px}
+.gterm p{margin:0; font-size:12.8px; color:var(--ink-soft)}
+
+hr.rule{border:none; border-top:1px solid var(--border); margin:26px 0}
+.foot-nav{display:flex; justify-content:space-between; margin-top:44px; padding-top:18px; border-top:1px solid var(--border)}
+.foot-btn{font-family:var(--mono); font-size:12px; color:var(--ink-soft); background:none; border:1px solid var(--border); border-radius:7px; padding:9px 14px; cursor:pointer}
+.foot-btn:hover{background:var(--surface-2); color:var(--ink)}
 </style>
-</head>
-<body>
-<div class="page">
 
-  <h1>Parâmetros Sherlock — o que a seguradora precisa enviar</h1>
-  <p class="subtitle">Dois momentos distintos: configuração de onboarding (uma vez) e payload por sinistro (cada chamada)</p>
+<div class="shell">
+  <nav class="rail">
+    <div class="rail-brand"><span class="dot"></span><b>MULTI-TENANT</b></div>
+    <div class="rail-nav" id="railnav">
+      <button class="rail-item active" data-p="glossario"><span class="n">00</span> Glossário</button>
+      <button class="rail-item" data-p="visao"><span class="n">01</span> Visão geral</button>
+      <button class="rail-item" data-p="diagnostico"><span class="n">02</span> Diagnóstico real</button>
+      <button class="rail-item" data-p="fluxo"><span class="n">03</span> Fluxo da requisição</button>
+      <button class="rail-item" data-p="tenants"><span class="n">04</span> Tenants &amp; secrets</button>
+      <button class="rail-item" data-p="configurador"><span class="n">05</span> Configurador por ramo</button>
+      <button class="rail-item" data-p="arquivos"><span class="n">06</span> Manter vs. mudar</button>
+      <button class="rail-item" data-p="fases"><span class="n">07</span> Fases &amp; riscos</button>
+    </div>
+    <div class="rail-foot">Levantamento direto no código<br>c:\sherlock (main) · c:\Extrator (uat)</div>
+  </nav>
 
-  <!-- =========================================================== -->
-  <!-- PARTE 1: ONBOARDING -->
-  <!-- =========================================================== -->
-  <div class="section-title">Parte 1 — Configuração de onboarding (enviada uma vez, salva no tenant)</div>
-  <span class="when when-once">⚙ Enviado uma vez no cadastro</span>
+  <main>
 
-  <div class="note-blue">
-    Esses parâmetros são enviados pela seguradora durante o onboarding e ficam salvos em <code>dbProteoKnowledge.tenants</code>.
-    A partir daí, toda chamada de sinistro os herda automaticamente — a seguradora não precisa repetir nada.
-  </div>
+    <!-- ============ 00 GLOSSÁRIO ============ -->
+    <section class="page active" id="p-glossario">
+      <div class="eyebrow">Antes de começar</div>
+      <h1 class="pagetitle">Termos usados neste documento</h1>
+      <p class="lede">Explicação em português simples dos termos técnicos que aparecem nas próximas abas. Não precisa decorar — é só para consultar sempre que aparecer uma palavra estranha.</p>
 
-  <h2>1.1 — Identificação do tenant</h2>
-  <table class="param-table">
-    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
-    <tr>
-      <td><span class="param-name">tenant_id</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Identificador único da seguradora no sistema</div><div class="param-ex">ex: "seg-porto-001"</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">nome</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Nome da seguradora</div><div class="param-ex">ex: "Porto Seguro S.A."</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">cnpj</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">CNPJ da seguradora</div><div class="param-ex">ex: "61.198.164/0001-60"</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">api_key</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Chave de autenticação gerada pelo sistema Proteo no cadastro</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">ramos_contratados</span></td>
-      <td><span class="param-type">array[string]</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Ramos habilitados para essa seguradora</div><div class="param-ex">ex: ["auto", "vida", "residencial"]</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">contato_tecnico</span></td>
-      <td><span class="param-type">object</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Email e nome do responsável técnico para notificações</div><div class="param-ex">ex: { "nome": "João Silva", "email": "joao@seguradora.com.br" }</div></td>
-    </tr>
-  </table>
+      <h2 class="sec">Como o sistema é organizado</h2>
+      <div class="gloss-grid">
+        <div class="gterm"><b>Tenant (inquilino / cliente)</b><p>Cada seguradora que usa o sistema. Um único programa atende várias, mas cada uma só enxerga os próprios dados.</p></div>
+        <div class="gterm"><b>Multi-tenant</b><p>Quando um mesmo sistema atende vários clientes ao mesmo tempo, cada um isolado dos outros — em vez de um sistema separado para cada cliente.</p></div>
+        <div class="gterm"><b>Deploy</b><p>O ato de publicar uma versão do sistema rodando de verdade, disponível para uso.</p></div>
+        <div class="gterm"><b>Pipeline</b><p>A sequência de passos que um dado percorre até virar resultado. Ex.: documento → leitura → extração → validação → salvar.</p></div>
+        <div class="gterm"><b>Motor de regras</b><p>A parte do sistema que decide o que é ou não coberto pelo seguro, de forma configurável — sem precisar reescrever código para cada regra nova.</p></div>
+        <div class="gterm"><b>Configurador</b><p>A peça que permite ajustar o comportamento do sistema (regras, documentos exigidos) preenchendo dados, em vez de programar de novo.</p></div>
+      </div>
 
-  <h2>1.2 — Adapter de campos (mapa de-para)</h2>
-  <div class="note">
-    <strong>Só precisa enviar o que for diferente do canônico.</strong> Se a seguradora já usa os mesmos nomes de campo que o modelo canônico do Sherlock, essa seção fica vazia e não precisa ser enviada.
-  </div>
-  <table class="param-table">
-    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
-    <tr>
-      <td><span class="param-name">adapter.formato_entrada</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-nao">Não</span></td>
-      <td><div class="param-desc">Formato dos dados enviados pela seguradora</div><div class="param-ex">ex: "json" | "xml" | "csv" — padrão: "json"</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">adapter.mapa_campos</span></td>
-      <td><span class="param-type">object</span></td>
-      <td><span class="req req-nao">Não</span></td>
-      <td><div class="param-desc">Mapa de campo deles → campo canônico. Só os que diferem.</div><div class="param-ex">ex: { "end_segurado": "insured.address", "dt_sinistro": "claim.occurredAt" }</div></td>
-    </tr>
-  </table>
+      <h2 class="sec">Onde os dados ficam guardados</h2>
+      <div class="gloss-grid">
+        <div class="gterm"><b>MongoDB / Mongo</b><p>O banco de dados onde ficam guardadas as informações do sistema (cadastros, regras, resultados).</p></div>
+        <div class="gterm"><b>Coleção (collection)</b><p>Dentro do Mongo, equivale a uma "tabela": um grupo de registros do mesmo tipo. Ex.: a coleção <code>Tenants</code> guarda um registro por seguradora.</p></div>
+        <div class="gterm"><b>S3 / bucket</b><p>O serviço da Amazon onde ficam guardados os arquivos (PDFs, fotos de documentos). Um "bucket" é como uma pasta grande nesse serviço.</p></div>
+        <div class="gterm"><b>Secrets Manager</b><p>Um cofre digital da Amazon onde ficam senhas e chaves de acesso, em vez de deixá-las escritas no meio do código.</p></div>
+        <div class="gterm"><b>Cache / TTL</b><p>Cache é uma "memória rápida" que guarda um resultado já calculado para não repetir o trabalho. TTL é por quanto tempo essa informação continua valendo antes de precisar buscar de novo.</p></div>
+      </div>
 
-  <h2>1.3 — Regras ativas por ramo</h2>
-  <div class="note-blue">
-    As regras do catálogo ficam <strong>todas ativas por padrão</strong> para cada ramo contratado.
-    A seguradora só informa o que quer desligar ou adicionar como extra.
-  </div>
-  <table class="param-table">
-    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
-    <tr>
-      <td><span class="param-name">regras.desativar</span></td>
-      <td><span class="param-type">array[string]</span></td>
-      <td><span class="req req-nao">Não</span></td>
-      <td><div class="param-desc">IDs de regras do catálogo que não se aplicam a essa seguradora</div><div class="param-ex">ex: ["regra-esporte-radical", "regra-bo-endereco"]</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">regras.extras</span></td>
-      <td><span class="param-type">array[object]</span></td>
-      <td><span class="req req-nao">Não</span></td>
-      <td><div class="param-desc">Regras específicas dessa seguradora que não existem no catálogo</div><div class="param-ex">ex: [{ "nome": "Limite regional SP", "primitiva": "comparar", "campo": "claim.location.uf", "operador": "igual", "valor": "SP" }]</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">regras.tolerancias</span></td>
-      <td><span class="param-type">object</span></td>
-      <td><span class="req req-nao">Não</span></td>
-      <td><div class="param-desc">Parâmetros numéricos das regras que têm threshold ajustável</div><div class="param-ex">ex: { "distancia_endereco_bo_km": 5, "janela_atraso_aviso_dias": 30 }</div></td>
-    </tr>
-  </table>
+      <h2 class="sec">Acesso e segurança</h2>
+      <div class="gloss-grid">
+        <div class="gterm"><b>API</b><p>A "porta de entrada" pela qual outros sistemas conversam com o Sherlock ou o Extrator para pedir alguma coisa.</p></div>
+        <div class="gterm"><b>Endpoint</b><p>Um endereço específico dentro da API que faz uma única coisa. Ex.: o endereço que recebe um documento para extrair dados dele.</p></div>
+        <div class="gterm"><b>Credencial</b><p>O "usuário e senha" (ou equivalente) que identifica quem está fazendo um pedido ao sistema.</p></div>
+        <div class="gterm"><b>Hash</b><p>Uma versão embaralhada e sem volta de uma senha, guardada no banco no lugar da senha real — assim, mesmo se alguém acessar o banco, não descobre a senha.</p></div>
+      </div>
 
-  <h2>1.4 — Condições gerais (upload por produto)</h2>
-  <table class="param-table">
-    <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição / Exemplo</th></tr>
-    <tr>
-      <td><span class="param-name">condicoes_gerais[].ramo</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Ramo ao qual esse documento de condições pertence</div><div class="param-ex">ex: "auto"</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">condicoes_gerais[].produto_id</span></td>
-      <td><span class="param-type">string</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Identificador do produto/apólice dentro do ramo</div><div class="param-ex">ex: "auto-premium-v2"</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">condicoes_gerais[].arquivo</span></td>
-      <td><span class="param-type">file (PDF)</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">PDF das condições gerais. O Sherlock indexa para RAG automaticamente.</div></td>
-    </tr>
-    <tr>
-      <td><span class="param-name">condicoes_gerais[].vigencia</span></td>
-      <td><span class="param-type">object</span></td>
-      <td><span class="req req-sim">Sim</span></td>
-      <td><div class="param-desc">Período de validade dessas condições</div><div class="param-ex">ex: { "inicio": "2024-01-01", "fim": "2024-12-31" }</div></td>
-    </tr>
-  </table>
+      <h2 class="sec">Inteligência artificial</h2>
+      <div class="gloss-grid">
+        <div class="gterm"><b>LLM</b><p>O modelo de inteligência artificial (como o Claude ou o GPT) que lê e interpreta o texto dos documentos e sinistros.</p></div>
+        <div class="gterm"><b>RAG</b><p>Técnica em que a IA primeiro busca o trecho certo dentro de um documento (ex.: as condições gerais da apólice) e só depois responde com base nele — isso evita que ela "invente" uma resposta.</p></div>
+      </div>
 
-  <!-- =========================================================== -->
-  <!-- PARTE 2: PAYLOAD POR SINISTRO -->
-  <!-- =========================================================== -->
-  <div class="section-title">Parte 2 — Payload por sinistro (enviado a cada chamada à API)</div>
-  <span class="when when-each">📨 Enviado a cada sinistro</span>
+      <h2 class="sec">Código e processamento</h2>
+      <div class="gloss-grid">
+        <div class="gterm"><b>Repositório (repo)</b><p>A pasta com todo o código-fonte de um projeto, com histórico de todas as alterações já feitas.</p></div>
+        <div class="gterm"><b>Branch</b><p>Uma cópia paralela do código, usada para testar ou desenvolver algo sem mexer na versão principal.</p></div>
+        <div class="gterm"><b>Schema</b><p>A "receita" que descreve quais campos um documento ou dado deve ter, e de que tipo (texto, número, data...).</p></div>
+        <div class="gterm"><b>Fila (SQS)</b><p>Uma lista de tarefas pendentes que vão sendo processadas uma de cada vez, em vez de todas juntas — evita sobrecarregar o sistema.</p></div>
+      </div>
+    </section>
 
-  <div class="note-blue">
-    Envelope fixo + <code>ramo_payload</code> variável por ramo. O envelope é sempre igual — a seguradora integra uma vez.
-    Só o <code>ramo_payload</code> muda dependendo do ramo do sinistro.
-  </div>
+    <!-- ============ 01 VISÃO GERAL ============ -->
+    <section class="page" id="p-visao">
+      <div class="eyebrow">Sherlock + Extrator</div>
+      <h1 class="pagetitle">Planta multi-tenant, validada contra o código</h1>
+      <p class="lede">Decisões de fundo já definidas — credencial por cliente, config em coleção + Secrets Manager, deploy único roteado por requisição. Este documento confere cada uma delas linha a linha contra os dois repositórios reais e fecha a peça que faltava: como o Sherlock passa a se adaptar a qualquer ramo de seguro sem reescrever código a cada cliente novo.</p>
 
-  <h2>2.1 — Envelope fixo (igual para todos os ramos)</h2>
+      <h2 class="sec">O que foi localizado no código</h2>
+      <div class="callout fix">
+        <div class="ct">⚠ Três pontos não encontrados no estado atual do código</div>
+        <p><b>1. Não existe dicionário <code>ENVIRONMENTS</code></b> em nenhum dos dois repositórios (busca por <code>ENVIRONMENTS</code> e <code>APP_ENV</code> em <code>c:\sherlock</code> e <code>c:\Extrator</code> — zero ocorrências). O tenant não é decidido por variável de deploy hoje: no Sherlock essa noção simplesmente <b>não existe</b>, e no Extrator já é resolvido por requisição.</p>
+        <p><b>2. A autenticação por <code>X-Client-ID</code>/<code>X-Client-Secret</code> já está implementada e em produção no Extrator</b> — <code>app/service/auth.py</code>, coleção <code>CredenciaisAPI</code>, injetada como dependency em todo endpoint. Não é uma decisão a tomar, é uma peça pronta a reaproveitar (inclusive no Sherlock).</p>
+        <p><b>3. Os caminhos previstos para o Sherlock não existem na branch <code>main</code></b>: <code>app/agents/nodes/fetch_claim_rules.py</code>, <code>validate_documents.py</code>, <code>app/api/controller/claim.py</code>, <code>app/service/clients/*</code>, <code>app/workers/runners.py</code> — nenhum desses arquivos existe. Os caminhos reais estão na seção <a href="#" onclick="go('arquivos');return false">Manter vs. mudar</a>.</p>
+      </div>
 
-  <div class="code-wrap"><pre><span class="c-comment">// POST /api/v1/sherlock/analisar</span>
+      <h2 class="sec">O que dá para aproveitar como está</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-h"><h3>Confirmado no código</h3><span class="pill keep">aproveita</span></div>
+          <p style="margin:0">Credencial <code>X-Client-ID</code>/<code>X-Client-Secret</code> por cliente · coleção <code>Tenants</code> num banco de controle + AWS Secrets Manager para segredos · deploy único multi-tenant roteado por requisição · tipo de seguro como config do tenant.</p>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Não existe ainda</h3><span class="pill new">criar</span></div>
+          <p style="margin:0">O <b>configurador de regras por ramo</b> do Sherlock — hoje inexistente, as regras estão escritas como função Python fixa para seguro de vida. Sem isso, "múltiplos ramos" continua sendo múltiplos <code>if</code> no código.</p>
+        </div>
+      </div>
+
+      <h2 class="sec">Princípio do configurador</h2>
+      <p>O motor de execução (autenticação, resolução de tenant, motor de regras, RAG, fila) é <b>código, escrito uma vez</b>. O que muda de cliente para cliente e de ramo para ramo é <b>dado</b>: linhas em coleções do Mongo. Trocar de seguradora ou adicionar um ramo novo deve significar <i>inserir documentos</i>, não abrir um editor de código. Isso só é verdade hoje para uma fatia do Extrator (templates genéricos) — no Sherlock, é o oposto: tudo é código fixo para vida.</p>
+    </section>
+
+    <!-- ============ 01 DIAGNÓSTICO ============ -->
+    <section class="page" id="p-diagnostico">
+      <div class="eyebrow">Estado real do código</div>
+      <h1 class="pagetitle">Diagnóstico, arquivo por arquivo</h1>
+      <p class="lede">Lido diretamente dos dois repositórios — o que o código faz hoje, não uma interpretação de documento.</p>
+
+      <h2 class="sec">Extrator <span class="mono" style="font-size:11px;color:var(--ink-faint)">c:\Extrator · branch uat</span></h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-h"><h3>Já pronto</h3><span class="svc-tag extrator">reaproveitar</span></div>
+          <div class="flist">
+            <div class="frow y"><span class="mk">✓</span><span>Auth por credencial já é por <i>requisição</i>, não por deploy — <code>app/service/auth.py</code></span></div>
+            <div class="frow y"><span class="mk">✓</span><span>Filtro <code>id_cliente</code> já é padrão em todos os repositórios (templates, jobs, extrações)</span></div>
+            <div class="frow y"><span class="mk">✓</span><span>Templates genéricos já funcionam "por exemplo": sobe um documento, o schema é inferido — <code>infer_schema()</code> em <code>service/extraction.py</code></span></div>
+            <div class="frow y"><span class="mk">✓</span><span>Fila assíncrona já é robusta: SQS + presigned S3 + dedupe por <code>document_id</code> — <code>service/job_queue.py</code></span></div>
+            <div class="frow y"><span class="mk">✓</span><span>Validador de documento já aceita instrução customizada por cliente e campos obrigatórios condicionais (kits) — <code>service/validators.py</code></span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Falta para banco por cliente</h3><span class="svc-tag extrator">bloqueador</span></div>
+          <div class="flist">
+            <div class="frow n"><span class="mk">✕</span><span><code>settings.db</code> é um singleton global, criado uma vez no import — <code>config/settings.py:36-44</code>. Precisa virar resolução por tenant.</span></div>
+            <div class="frow n"><span class="mk">✕</span><span><code>CredenciaisAPI</code> vive no <b>mesmo banco</b> (<code>Antifraude</code>) dos dados de negócio. Problema de bootstrap: não dá pra saber qual banco abrir antes de autenticar. Precisa sair para o banco de controle.</span></div>
+            <div class="frow n"><span class="mk">✕</span><span>Sem herança de template — cada cliente cria o seu do zero. Não é bloqueador, mas contradiz a ideia de "template base" da doc anterior.</span></div>
+            <div class="frow n"><span class="mk">✕</span><span>Campos antifraude fixos (<code>tipo_documento_detectado</code>, <code>crm_medico</code>...) duplicados literalmente em dois métodos de <code>service/extraction.py</code></span></div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="sec">Sherlock <span class="mono" style="font-size:11px;color:var(--ink-faint)">c:\sherlock · branch main</span></h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-h"><h3>Já pronto</h3><span class="svc-tag sherlock">reaproveitar</span></div>
+          <div class="flist">
+            <div class="frow y"><span class="mk">✓</span><span>Pipeline RAG funcional sobre Bedrock (Titan embeddings + Claude) já indexa PDF de condições gerais e responde — <code>features/claim_analysis</code></span></div>
+            <div class="frow y"><span class="mk">✓</span><span><code>ClaimValidationContext.from_payload</code> já normaliza o payload bruto num formato intermediário razoável — bom candidato a schema canônico do motor de regras</span></div>
+            <div class="frow y"><span class="mk">✓</span><span>Estrutura em fases (elegibilidade → exclusões → documentação → cobertura) já existe como <i>conceito</i>, só precisa deixar de ser hardcoded</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Falta — e é mais do que parecia</h3><span class="svc-tag sherlock">estrutural</span></div>
+          <div class="flist">
+            <div class="frow n"><span class="mk">✕</span><span><b>Zero MongoDB.</b> <code>pymongo</code> nem é dependência do projeto. Não existe onde guardar <code>Tenants</code>, regras ou veredito — isso é trabalho novo, não migração.</span></div>
+            <div class="frow n"><span class="mk">✕</span><span><code>phase_validators.py</code> é <b>100% hardcoded para seguro de vida</b>: carência de 24 meses, suicídio após 2 anos, idade máxima 65 — tudo em <code>if</code> fixo</span></div>
+            <div class="frow n"><span class="mk">✕</span><span>Três pipelines paralelos parcialmente redundantes com entidades duplicadas (ver abaixo) — precisa consolidar antes de generalizar</span></div>
+            <div class="frow n"><span class="mk">✕</span><span>Nenhuma noção de tenant em <code>config/settings.py</code> ou <code>api/core/config.py</code> — bucket S3, índice vetorial e modelo são globais por processo</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub" style="margin-top:26px">Os três pipelines do Sherlock hoje</h3>
+      <p>Achado que muda o escopo do trabalho: não é "adicionar um configurador", é <b>escolher qual pipeline vira a base</b> antes de generalizar.</p>
+      <div class="twrap">
+        <table>
+          <tr><th>Pipeline</th><th>Onde vive</th><th>Está em produção?</th><th>Característica</th></tr>
+          <tr>
+            <td><b>Fases + RAG direto</b></td>
+            <td><code class="path">claim_router_with_di.py</code></td>
+            <td><span class="pill keep">produção real</span></td>
+            <td>Combina <code>validate_all_phases()</code> (regras fixas de vida) com <code>AnalyzeClaimUseCase</code> (busca semântica + LLM). É o que o <code>app/api/main.py</code> de fato serve.</td>
+          </tr>
+          <tr>
+            <td><b>LangGraph retrieve→generate</b></td>
+            <td><code class="path">app/agents/graph.py</code></td>
+            <td><span class="pill risk">só CLI</span></td>
+            <td>Usado apenas por <code>python -m app.main</code>. Não é servido pela API. Candidato a aposentar ou fundir.</td>
+          </tr>
+          <tr>
+            <td><b>Scoring/extração de regras</b></td>
+            <td>dentro de <code>AnalyzeClaimUseCase</code></td>
+            <td><span class="pill risk">código morto</span></td>
+            <td><code>execute()</code> chama direto <code>_execute_direct_rag_mode</code> — os métodos <code>_score_rule</code>, <code>_filter_rules_with_llm</code>, <code>_extract_rules</code> nunca são chamados.</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <div class="ct">Entidades duplicadas</div>
+        <p><code class="path">claim_analysis/domain/entities.py</code> e <code class="path">policy_rag/domain/entities.py</code> redefinem <code>ClaimReserve</code>, <code>ClaimItem</code>, <code>ClaimObject</code>, <code>PolicyRule</code>, <code>RuleEvidence</code>, <code>RuleEvaluation</code> — quase idênticas, levemente divergentes. Isso precisa virar uma coisa só antes do motor de regras, senão o configurador teria que alimentar dois modelos de dados ao mesmo tempo.</p>
+      </div>
+    </section>
+
+    <!-- ============ 02 FLUXO ============ -->
+    <section class="page" id="p-fluxo">
+      <div class="eyebrow">Ponta a ponta</div>
+      <h1 class="pagetitle">O caminho de uma requisição</h1>
+      <p class="lede">Da credencial até o veredito. A resolução de tenant é o eixo compartilhado; Extrator e Sherlock são dois braços que a consultam do mesmo jeito.</p>
+
+      <div class="legend">
+        <div class="li"><span class="sw" style="background:var(--shared)"></span>Eixo compartilhado</div>
+        <div class="li"><span class="sw" style="background:var(--adjust)"></span>Extrator</div>
+        <div class="li"><span class="sw" style="background:var(--accent)"></span>Sherlock</div>
+        <div class="li"><span class="sw" style="background:var(--new)"></span>Peça nova a construir</div>
+        <div class="li"><span class="sw" style="background:var(--keep)"></span>Peça já pronta, reaproveitada</div>
+      </div>
+
+      <div class="flow">
+        <div class="fnode spine"><b>Requisição chega</b><span>Header <code>X-Client-ID</code> / <code>X-Client-Secret</code></span></div>
+        <div class="flink"></div>
+        <div class="fnode spine"><b>Autenticação valida credencial</b><span>Coleção <code>CredenciaisAPI</code> no banco de controle — hoje só existe no Extrator, precisa existir no Sherlock também</span></div>
+        <div class="flink"></div>
+        <div class="fnode spine"><b>TenantResolver monta TenantContext</b><span>Lê <code>Tenants</code> + segredos no Secrets Manager · cache com TTL</span></div>
+        <div class="flink"></div>
+
+        <div class="lanes">
+          <div class="lane">
+            <div class="lane-head a">Extrator</div>
+            <div class="fnode ok2"><b>Abre Mongo/S3/Proteo do tenant</b><span>via <code>TenantContext</code>, não mais <code>settings.db</code></span></div>
+            <div class="flink"></div>
+            <div class="fnode"><b>Resolve template do documento</b><span>Sistema (CNH, RG, óbito...) ou genérico por schema do cliente</span></div>
+            <div class="flink"></div>
+            <div class="fnode ok2"><b>Extrai com LLM</b><span>Vertex ou OpenAI · já funciona hoje</span></div>
+            <div class="flink"></div>
+            <div class="fnode ok2"><b>Valida documento</b><span>Vencimento, assinatura, integridade — Bedrock, já parametrizável</span></div>
+            <div class="flink"></div>
+            <div class="fnode"><b>Salva no banco do tenant</b><span><code>Documentos</code> / <code>DocumentosGenericos</code></span></div>
+          </div>
+
+          <div class="lane">
+            <div class="lane-head b">Sherlock</div>
+            <div class="fnode hi"><b>Carrega config do ramo</b><span><code>tenant.seguros[ramo]</code> → quais regras, quais documentos exigidos</span></div>
+            <div class="flink"></div>
+            <div class="fnode hi"><b>Motor de regras por fase</b><span>Lê <code>regras_sherlock</code> como dado — substitui <code>phase_validators.py</code></span></div>
+            <div class="flink"></div>
+            <div class="fnode ok2"><b>RAG nas condições gerais</b><span>Busca semântica já funciona — passa a ser por tenant + vigência</span></div>
+            <div class="flink"></div>
+            <div class="fnode"><b>Chama o Extrator</b><span>Com a credencial de serviço do próprio tenant (não a do cliente final — ver alerta na aba Tenants)</span></div>
+            <div class="flink"></div>
+            <div class="fnode hi"><b>Gera veredito</b><span>Coberto / negado / pendente + trilha de auditoria — persistência nova, hoje não existe</span></div>
+          </div>
+        </div>
+
+        <div class="flink" style="margin-top:0"></div>
+        <div class="fnode spine"><b>Resposta consolidada</b><span>Volta ao Proteo / seguradora com parecer + rastro de auditoria</span></div>
+      </div>
+    </section>
+
+    <!-- ============ 03 TENANTS ============ -->
+    <section class="page" id="p-tenants">
+      <div class="eyebrow">Config compartilhada</div>
+      <h1 class="pagetitle">Registro de tenants e segredos</h1>
+      <p class="lede">Essa parte do desenho está confirmada e é a fundação de tudo — os nomes dos campos foram ajustados para casar com o que os repositórios reais esperam, e foi adicionado o que faltava para autenticação de serviço entre Sherlock e Extrator.</p>
+
+      <div class="codeblock"><pre><span class="c">// dbControle.Tenants — banco sempre-compartilhado, nunca o de um cliente</span>
 {
-  <span class="c-key">"tenant"</span>: {
-    <span class="c-key">"tenant_id"</span>: <span class="c-str">"seg-porto-001"</span>,           <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"ramo"</span>: <span class="c-str">"auto"</span>,                        <span class="c-comment">// obrigatório — define qual ramo_payload esperar</span>
-    <span class="c-key">"produto_id"</span>: <span class="c-str">"auto-premium-v2"</span>        <span class="c-comment">// obrigatório — qual produto/apólice</span>
+  <span class="k">"tenant_id"</span>: <span class="s">"herval"</span>,
+  <span class="k">"nome"</span>: <span class="s">"Herval Seguros"</span>,
+  <span class="k">"ativo"</span>: <span class="n">true</span>,
+
+  <span class="c">// Credenciais Proteo do cliente</span>
+  <span class="k">"proteo"</span>: {
+    <span class="k">"auth_api_base_url"</span>: <span class="s">"https://api-herval.proteo.tech/proteo-auth/auth"</span>,
+    <span class="k">"imo_bff_base_url"</span>: <span class="s">"https://api-herval.proteo.tech/insuremo-bff"</span>,
+    <span class="k">"admin_bff_base_url"</span>: <span class="s">"https://api-herval.proteo.tech/proteo-admin-bff"</span>,
+    <span class="k">"secret_ref"</span>: <span class="s">"proteo/herval/credentials"</span>
   },
 
-  <span class="c-key">"apolice"</span>: {
-    <span class="c-key">"numero"</span>: <span class="c-str">"AP-2024-00123"</span>,           <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"vigencia"</span>: {
-      <span class="c-key">"inicio"</span>: <span class="c-str">"2024-01-01"</span>,             <span class="c-comment">// obrigatório</span>
-      <span class="c-key">"fim"</span>: <span class="c-str">"2024-12-31"</span>                <span class="c-comment">// obrigatório</span>
-    },
-    <span class="c-key">"coberturas"</span>: [<span class="c-str">"colisao"</span>, <span class="c-str">"roubo"</span>, <span class="c-str">"incendio"</span>],  <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"limite_maximo"</span>: <span class="c-num">120000.00</span>,           <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"franquia"</span>: <span class="c-num">2500.00</span>,                 <span class="c-comment">// opcional</span>
-    <span class="c-key">"exclusoes"</span>: [<span class="c-str">"esporte_radical"</span>]        <span class="c-comment">// opcional — complementa condições gerais</span>
+  <span class="c">// Isolamento físico por cliente (decisão da diretoria)</span>
+  <span class="k">"storage"</span>: { <span class="k">"s3_bucket"</span>: <span class="s">"herval-docs"</span>, <span class="k">"s3_vectors_bucket"</span>: <span class="s">"herval-vectors"</span> },
+  <span class="k">"database"</span>: {
+    <span class="k">"secret_ref"</span>: <span class="s">"mongo/herval/uri"</span>,
+    <span class="k">"extrator_db"</span>: <span class="s">"Extrator"</span>,
+    <span class="k">"sherlock_db"</span>: <span class="s">"Sherlock"</span>  <span class="c">// novo — Sherlock ainda não tem banco nenhum</span>
   },
 
-  <span class="c-key">"segurado"</span>: {
-    <span class="c-key">"nome"</span>: <span class="c-str">"Maria Silva"</span>,               <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"cpf"</span>: <span class="c-str">"***.***.***-**"</span>,             <span class="c-comment">// obrigatório (mascarado, não armazenar em claro)</span>
-    <span class="c-key">"endereco"</span>: <span class="c-str">"Rua das Flores, 123, SP"</span>  <span class="c-comment">// obrigatório para checagem geo</span>
-  },
+  <span class="c">// NOVO — autenticação de serviço, Sherlock chamando o Extrator</span>
+  <span class="k">"service_auth"</span>: { <span class="k">"extrator_client_id"</span>: <span class="s">"herval_svc"</span>, <span class="k">"secret_ref"</span>: <span class="s">"extrator/herval/service-credentials"</span> },
 
-  <span class="c-key">"sinistro"</span>: {
-    <span class="c-key">"id"</span>: <span class="c-str">"SIN-2024-99887"</span>,              <span class="c-comment">// obrigatório — id da seguradora</span>
-    <span class="c-key">"data_ocorrencia"</span>: <span class="c-str">"2024-09-15T14:30:00"</span>, <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"data_aviso"</span>: <span class="c-str">"2024-09-16T09:00:00"</span>,    <span class="c-comment">// obrigatório — para checagem de prazo</span>
-    <span class="c-key">"relato_segurado"</span>: <span class="c-str">"Colidi com outro carro na Av. Paulista..."</span>, <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"valor_reclamado"</span>: <span class="c-num">18500.00</span>,           <span class="c-comment">// obrigatório</span>
-    <span class="c-key">"local"</span>: {
-      <span class="c-key">"logradouro"</span>: <span class="c-str">"Av. Paulista, 900"</span>,
-      <span class="c-key">"cidade"</span>: <span class="c-str">"São Paulo"</span>,
-      <span class="c-key">"uf"</span>: <span class="c-str">"SP"</span>,
-      <span class="c-key">"lat"</span>: <span class="c-num">-23.5632</span>, <span class="c-key">"lng"</span>: <span class="c-num">-46.6543</span>   <span class="c-comment">// opcional, melhora checagem geo</span>
-    }
-  },
-
-  <span class="c-key">"documentos"</span>: [                          <span class="c-comment">// opcional — ids já extraídos pelo Extrator</span>
-    {
-      <span class="c-key">"tipo"</span>: <span class="c-str">"boletim_ocorrencia"</span>,
-      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d5"</span>  <span class="c-comment">// _id em documentos_extraidos</span>
-    },
-    {
-      <span class="c-key">"tipo"</span>: <span class="c-str">"laudo_medico"</span>,
-      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d6"</span>
-    }
-  ],
-
-  <span class="c-key">"ramo_payload"</span>: { <span class="c-comment">// ← varia por ramo — ver seção 2.2</span>
-    <span class="c-comment">// campos específicos do ramo auto, vida, viagem etc.</span>
-  }
+  <span class="k">"seguros"</span>: [ <span class="c">/* ver aba Configurador */</span> ]
 }</pre></div>
 
-  <h2>2.2 — ramo_payload por ramo</h2>
-  <p style="font-size:12px;color:var(--text-sec);margin-bottom:16px;">
-    Apenas o bloco <code>ramo_payload</code> muda. O resto do envelope é sempre igual.
-  </p>
-
-  <div class="ramo-grid">
-
-    <div class="ramo-card">
-      <div class="ramo-name">
-        🚗 Auto
-        <span class="ramo-badge" style="background:var(--teal-light);color:var(--teal)">ramo: "auto"</span>
+      <div class="callout fix">
+        <div class="ct">⚠ Lacuna identificada</div>
+        <p>O desenho previa "Sherlock chama o Extrator com a credencial do próprio tenant" — mas <code>CredenciaisAPI</code> guarda <code>segredo_hash</code> (hash, irreversível). Não dá para reapresentar a senha do cliente numa chamada de saída. Por isso o campo <code>service_auth</code> acima: uma credencial <i>de serviço</i>, separada da credencial que o cliente usa para chamar a API, só para tráfego Sherlock→Extrator.</p>
       </div>
-      <div class="ramo-fields">
-        <div class="rf">veiculo.placa</div>
-        <div class="rf">veiculo.chassi</div>
-        <div class="rf">veiculo.modelo</div>
-        <div class="rf">veiculo.ano</div>
-        <div class="rf">veiculo.km_atual</div>
-        <div class="rf">condutor.nome</div>
-        <div class="rf">condutor.cnh</div>
-        <div class="rf">condutor.categoria_cnh</div>
-        <div class="rf">condutor.validade_cnh</div>
-        <div class="rf rf-extra">bo_numero  ← cruzamento endereço</div>
-        <div class="rf rf-extra">terceiros [ ]  ← nome, cpf, placa</div>
-        <div class="rf rf-extra">tipo_sinistro: colisao|roubo|incendio</div>
+
+      <h3 class="sub">Resolução por requisição</h3>
+      <p>Componente novo, replicado nos dois repositórios (avaliar extrair como lib compartilhada): <code>app/config/tenant.py</code> com <code>TenantConfig</code> (Pydantic), <code>TenantResolver</code> (carrega + cacheia com TTL) e a dependency <code>CurrentTenant</code>. No Extrator, ele substitui o singleton <code>settings.db</code>; no Sherlock, ele <i>cria</i> a primeira conexão Mongo que o serviço já vai ter.</p>
+    </section>
+
+    <!-- ============ 04 CONFIGURADOR ============ -->
+    <section class="page" id="p-configurador">
+      <div class="eyebrow">A peça que faltava</div>
+      <h1 class="pagetitle">Configurador de regras por ramo</h1>
+      <p class="lede">Hoje, "regra de negócio" no Sherlock significa uma função Python com <code>if</code> fixos para seguro de vida. A proposta: cada regra vira uma linha de dado, o motor de execução é o mesmo para qualquer ramo, e trocar de seguradora ou adicionar um ramo passa a ser inserir documentos, não alterar código.</p>
+
+      <h2 class="sec">De função fixa para regra declarativa</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-h"><h3>Hoje</h3><span class="pill risk">código</span></div>
+          <div class="codeblock" style="margin:0"><pre><span class="c"># phase_validators.py — só existe para vida</span>
+<span class="k">if</span> compliance.is_true(<span class="s">"is_criminal_act"</span>):
+    rejeitar(<span class="s">"Ato criminoso"</span>)
+
+carencia = <span class="n">24</span> * <span class="n">30</span>  <span class="c"># fixo</span></pre></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Proposta</h3><span class="pill new">dado</span></div>
+          <div class="codeblock" style="margin:0"><pre><span class="c">// regras_sherlock — 1 doc por regra</span>
+{ <span class="k">"campo"</span>: <span class="s">"compliance.is_criminal_act"</span>,
+  <span class="k">"operador"</span>: <span class="s">"equals"</span>,
+  <span class="k">"valor_esperado"</span>: <span class="n">false</span>,
+  <span class="k">"severidade"</span>: <span class="s">"bloqueante"</span> }</pre></div>
+        </div>
       </div>
-    </div>
 
-    <div class="ramo-card">
-      <div class="ramo-name">
-        ❤️ Vida / Saúde
-        <span class="ramo-badge" style="background:var(--purple-light);color:var(--purple)">ramo: "vida"</span>
+      <h2 class="sec">Schema da regra</h2>
+      <div class="twrap">
+        <table>
+          <tr><th>Campo</th><th>Tipo</th><th>Papel</th></tr>
+          <tr><td><code>ramo</code></td><td class="mono">string</td><td>vida · auto · viagem · residencial...</td></tr>
+          <tr><td><code>fase</code></td><td class="mono">string</td><td>agrupa regras na ordem em que rodam (elegibilidade, exclusões, cobertura...)</td></tr>
+          <tr><td><code>campo</code></td><td class="mono">string</td><td>caminho no <code>ClaimValidationContext</code> já existente — reaproveita o normalizador que o Sherlock já tem</td></tr>
+          <tr><td><code>operador</code></td><td class="mono">enum</td><td><code>equals · menor_que · entre_datas · em · regex</code></td></tr>
+          <tr><td><code>valor_esperado</code></td><td class="mono">any</td><td>o que o operador compara contra</td></tr>
+          <tr><td><code>mensagem</code></td><td class="mono">string</td><td>texto mostrado se a regra reprovar — vira o "motivo" na resposta final</td></tr>
+          <tr><td><code>severidade</code></td><td class="mono">enum</td><td><code>bloqueante</code> (rejeita) · <code>revisao</code> (manda pra humano) — nenhum veredito automático negativo sem esse campo decidido</td></tr>
+        </table>
       </div>
-      <div class="ramo-fields">
-        <div class="rf">segurado.data_nascimento</div>
-        <div class="rf">segurado.profissao</div>
-        <div class="rf">beneficiario.nome</div>
-        <div class="rf">beneficiario.cpf</div>
-        <div class="rf">beneficiario.parentesco</div>
-        <div class="rf rf-extra">cid10  ← para exclusão por doença prévia</div>
-        <div class="rf rf-extra">data_obito  ← se aplicável</div>
-        <div class="rf rf-extra">causa_morte</div>
-        <div class="rf rf-extra">carencia_cumprida: true|false</div>
-        <div class="rf rf-extra">atividade_risco: true|false  ← exclusão</div>
+
+      <h2 class="sec">O mesmo motor, dois ramos diferentes</h2>
+      <p>Vida usa as regras já existentes em <code>phase_validators.py</code>, só movidas para dado. Auto é 100% novo — mas nenhuma linha de motor muda.</p>
+      <div class="grid2">
+        <div>
+          <div class="rulecard">
+            <div class="rulecard-h"><span>vida · fase exclusões</span><span class="pill keep">migrada</span></div>
+            <div class="rulecard-b kv">
+              <b>campo</b><span><code>compliance.is_suicide_within_two_years</code></span>
+              <b>operador</b><span>equals</span>
+              <b>esperado</b><span>false</span>
+              <b>mensagem</b><span>"Suicídio nos primeiros 2 anos — Cláusula 9.1"</span>
+            </div>
+          </div>
+          <div class="rulecard">
+            <div class="rulecard-h"><span>vida · fase elegibilidade</span><span class="pill keep">migrada</span></div>
+            <div class="rulecard-b kv">
+              <b>campo</b><span><code>event.event_date</code></span>
+              <b>operador</b><span>entre_datas</span>
+              <b>esperado</b><span><code>policy.waiting_period_end_date</code> → hoje</span>
+              <b>mensagem</b><span>"Evento dentro do período de carência"</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="rulecard">
+            <div class="rulecard-h"><span>auto · fase exclusões</span><span class="pill new">novo, só dado</span></div>
+            <div class="rulecard-b kv">
+              <b>campo</b><span><code>ramo_payload.tipo_sinistro</code></span>
+              <b>operador</b><span>em</span>
+              <b>esperado</b><span>[esporte_radical]</span>
+              <b>mensagem</b><span>"Sinistro decorrente de esporte de alto risco — cláusula de exclusão"</span>
+            </div>
+          </div>
+          <div class="rulecard">
+            <div class="rulecard-h"><span>auto · fase documentação</span><span class="pill new">novo, só dado</span></div>
+            <div class="rulecard-b kv">
+              <b>campo</b><span><code>documentation.boletim_ocorrencia</code></span>
+              <b>operador</b><span>equals</span>
+              <b>esperado</b><span>true</span>
+              <b>mensagem</b><span>"Boletim de Ocorrência não enviado"</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="ramo-card">
-      <div class="ramo-name">
-        ✈️ Viagem
-        <span class="ramo-badge" style="background:var(--blue-light);color:var(--blue)">ramo: "viagem"</span>
+      <h2 class="sec">Detecção de eventos no RAG também vira dado</h2>
+      <p><code>AnalyzeClaimUseCase</code> hoje detecta "suicídio", "crime", "esporte radical" com listas de palavras-chave em português cravadas no código Python (<code>_search_claim_evidences</code>, <code>_build_contextual_query</code>). Isso também é específico de vida e precisa virar config por ramo:</p>
+      <div class="codeblock"><pre><span class="c">// deteccao_eventos por ramo — alimenta a busca semântica</span>
+{ <span class="k">"ramo"</span>: <span class="s">"auto"</span>, <span class="k">"tag"</span>: <span class="s">"embriaguez"</span>,
+  <span class="k">"palavras_chave"</span>: [<span class="s">"álcool"</span>, <span class="s">"embriaguez"</span>, <span class="s">"bafômetro"</span>] }</pre></div>
+
+      <h2 class="sec">Documentos exigidos — reaproveitar o que o Extrator já tem</h2>
+      <p>O Extrator já separa tipos de documento "de sistema" (CNH, RG, certidão de óbito — com prompt dedicado) de tipos "genéricos" (schema livre, criado por exemplo). Para ramos novos, a maioria dos documentos exigidos (BO, apólice, laudo pericial) pode simplesmente entrar pelo caminho genérico já pronto — só documentos que precisam de um prompt especial e feito à mão (como a certidão de óbito hoje) exigem trabalho de engenharia. Isso é herdado direto de <code>tenant.seguros[ramo].documentos_exigidos</code>, campo que já apontava para IDs do Extrator no desenho original — só faltava o motor de regras do outro lado para dar uso a ele.</p>
+
+      <div class="callout ok">
+        <div class="ct">Pré-requisito antes de construir o motor</div>
+        <p>Consolidar os três pipelines do Sherlock (aba Diagnóstico) e unificar as entidades duplicadas primeiro. Construir o configurador em cima de dois modelos de dados paralelos multiplica o trabalho por dois — e um dos três pipelines já está morto em produção, então essa limpeza reduz código antes de adicionar código novo.</p>
       </div>
-      <div class="ramo-fields">
-        <div class="rf">viagem.destino</div>
-        <div class="rf">viagem.data_embarque</div>
-        <div class="rf">viagem.data_retorno</div>
-        <div class="rf">viagem.companhia_aerea</div>
-        <div class="rf">viagem.numero_voo</div>
-        <div class="rf rf-extra">tipo_sinistro: bagagem|cancelamento|medico</div>
-        <div class="rf rf-extra">comprovante_extravio_ref  ← extrator_ref</div>
-        <div class="rf rf-extra">valor_bagagem_declarado</div>
-        <div class="rf rf-extra">esporte_radical: true|false  ← exclusão</div>
+    </section>
+
+    <!-- ============ 05 ARQUIVOS ============ -->
+    <section class="page" id="p-arquivos">
+      <div class="eyebrow">Mudança por arquivo</div>
+      <h1 class="pagetitle">Manter vs. mudar</h1>
+      <p class="lede">Caminhos reais, conferidos nos dois repositórios — não os caminhos hipotéticos do desenho inicial.</p>
+
+      <h2 class="sec">Extrator</h2>
+      <div class="twrap">
+        <table>
+          <tr><th>Arquivo</th><th style="width:110px">Status</th><th>O que muda</th></tr>
+          <tr><td><code class="path">app/config/settings.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Remover <code>MongoClient</code>/<code>db</code> globais (linhas 36-44). Manter só config de plataforma (região, modelos LLM).</td></tr>
+          <tr><td><code class="path">app/config/tenant.py</code></td><td class="status"><span class="pill new">criar</span></td><td><code>TenantConfig</code>, <code>TenantResolver</code> com cache, pool de <code>MongoClient</code> por tenant, dependency <code>CurrentTenant</code>.</td></tr>
+          <tr><td><code class="path">app/repository/auth.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td><code>CredenciaisAPI</code> sai da <code>Antifraude</code> e vai para o banco de controle, sempre acessível antes de resolver o tenant.</td></tr>
+          <tr><td><code class="path">app/service/auth.py</code></td><td class="status"><span class="pill keep">manter</span></td><td>Mecanismo de header já correto — só passa a devolver <code>tenant_id</code> além do <code>client_id</code>.</td></tr>
+          <tr><td><code class="path">app/repository/generic_templates.py</code>, <code class="path">jobs.py</code>, <code class="path">extraction.py</code>, <code class="path">generic_extraction.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Trocar <code>settings.db</code> fixo por banco recebido do <code>TenantContext</code>. Filtro <code>id_cliente</code> vira redundância de segurança, não é removido.</td></tr>
+          <tr><td><code class="path">app/service/job_queue.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Bucket por tenant; <code>tenant_id</code> na mensagem SQS.</td></tr>
+          <tr><td><code class="path">app/service/validators.py</code></td><td class="status"><span class="pill keep">manter</span></td><td>Já parametrizável por instrução/campos obrigatórios — nenhuma mudança estrutural.</td></tr>
+          <tr><td><code class="path">lambda/handler.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Resolver tenant a partir do <code>tenant_id</code> da mensagem antes de processar.</td></tr>
+        </table>
       </div>
-    </div>
 
-    <div class="ramo-card">
-      <div class="ramo-name">
-        🏠 Residencial
-        <span class="ramo-badge" style="background:var(--amber-light);color:var(--amber)">ramo: "residencial"</span>
+      <h2 class="sec">Sherlock</h2>
+      <div class="twrap">
+        <table>
+          <tr><th>Arquivo</th><th style="width:110px">Status</th><th>O que muda</th></tr>
+          <tr><td><code class="path">app/config/settings.py</code>, <code class="path">app/api/core/config.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Sair do bucket/índice/modelo globais; ganhar dependência de <code>tenant.py</code> — não existe hoje.</td></tr>
+          <tr><td><code class="path">app/config/tenant.py</code></td><td class="status"><span class="pill new">criar</span></td><td>Mesmo componente do Extrator. Primeira conexão Mongo do Sherlock — avaliar extrair como lib compartilhada entre os dois repos.</td></tr>
+          <tr><td><code class="path">claim_router_with_di.py</code></td><td class="status"><span class="pill adjust">ajustar</span></td><td>Adotar <code>X-Client-ID</code>/<code>X-Client-Secret</code> igual ao Extrator; injetar <code>CurrentTenant</code>.</td></tr>
+          <tr><td><code class="path">claim_router.py</code></td><td class="status"><span class="pill risk">avaliar remoção</span></td><td>Router "simples" que retorna 501 sempre — não está servindo nada hoje.</td></tr>
+          <tr><td><code class="path">policy_rag/domain/phase_validators.py</code></td><td class="status"><span class="pill new">reescrever</span></td><td>Vira o motor de regras declarativo (aba Configurador) — regras saem do código e vão para <code>regras_sherlock</code>.</td></tr>
+          <tr><td><code class="path">claim_analysis/domain/entities.py</code> + <code class="path">policy_rag/domain/entities.py</code></td><td class="status"><span class="pill new">fundir</span></td><td>Unificar as entidades duplicadas antes do motor de regras.</td></tr>
+          <tr><td><code class="path">claim_analysis/domain/use_cases.py</code></td><td class="status"><span class="pill adjust">enxugar</span></td><td>Remover os métodos de scoring/extração nunca chamados; mover listas de palavras-chave para <code>deteccao_eventos</code> configurável.</td></tr>
+          <tr><td><code class="path">app/agents/graph.py</code>, <code class="path">app/main.py</code></td><td class="status"><span class="pill risk">decidir</span></td><td>Pipeline paralelo só usado via CLI. Aposentar ou reconciliar com o pipeline de produção — não deixar um terceiro caminho vivo.</td></tr>
+          <tr><td><code class="path">app/repository/</code> <span style="color:var(--ink-faint)">(novo diretório)</span></td><td class="status"><span class="pill new">criar</span></td><td>Repositórios para <code>Tenants</code>, <code>regras_sherlock</code>, <code>sinistros_analisados</code> — nada disso existe hoje porque o Sherlock não tem Mongo.</td></tr>
+        </table>
       </div>
-      <div class="ramo-fields">
-        <div class="rf">imovel.tipo: casa|apartamento</div>
-        <div class="rf">imovel.endereco_completo</div>
-        <div class="rf">imovel.area_m2</div>
-        <div class="rf">imovel.ocupacao: proprio|alugado</div>
-        <div class="rf rf-extra">tipo_sinistro: incendio|roubo|alagamento</div>
-        <div class="rf rf-extra">bo_numero  ← para roubo/furto</div>
-        <div class="rf rf-extra">laudo_pericia_ref  ← extrator_ref</div>
-        <div class="rf rf-extra">imovel_habitado_na_ocorrencia: true|false</div>
+    </section>
+
+    <!-- ============ 06 FASES ============ -->
+    <section class="page" id="p-fases">
+      <div class="eyebrow">Execução</div>
+      <h1 class="pagetitle">Fases &amp; riscos</h1>
+      <p class="lede">Mantém a sequência do planejamento inicial, com a Fase 2 recalibrada — o Sherlock parte de zero em Mongo e regras, não de um ajuste.</p>
+
+      <div class="tl">
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">0</div><div class="tlbar"></div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Fundação</h4><span class="tltime">~1 semana</span></div>
+            <p>Modelar <code>TenantConfig</code> e coleção <code>Tenants</code>; criar segredos no Secrets Manager; <code>TenantResolver</code> com cache; migrar clientes atuais como os dois primeiros tenants.</p>
+          </div>
+        </div>
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">1</div><div class="tlbar"></div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Extrator multi-tenant</h4><span class="tltime">~1–2 semanas</span></div>
+            <p>Extrair <code>CredenciaisAPI</code> para o banco de controle; injetar <code>TenantContext</code> na cadeia auth → service → repository; bucket e Proteo por tenant. Critério de aceite: credencial A nunca lê dado de B.</p>
+          </div>
+        </div>
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">2</div><div class="tlbar"></div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Sherlock — fundação + consolidação</h4><span class="tltime">~2–3 semanas</span></div>
+            <p>Maior que a estimativa inicial: adicionar <code>pymongo</code>, criar os repositórios do zero, <b>fundir as entidades duplicadas</b> e <b>decidir o destino do pipeline LangGraph</b> antes de plugar o tenant — senão o trabalho de tenant se multiplica por três pipelines.</p>
+          </div>
+        </div>
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">3</div><div class="tlbar"></div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Configurador de regras</h4><span class="tltime">~1–2 semanas</span></div>
+            <p><code>regras_sherlock</code> + motor de execução por fase; migrar as regras atuais de <code>phase_validators.py</code> como o primeiro ramo ("vida-default"); construir "auto" como segundo ramo para provar a generalização.</p>
+          </div>
+        </div>
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">4</div><div class="tlbar"></div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Onboarding automático</h4><span class="tltime">~1 semana</span></div>
+            <p>Endpoint/script de cadastro: cria <code>Tenants</code>, segredos, bucket S3 (Terraform já existe no Sherlock), credenciais de API e credencial de serviço. Meta: cliente novo em produção sem alterar código.</p>
+          </div>
+        </div>
+        <div class="tlrow">
+          <div class="tlnum"><div class="tlbadge">5</div></div>
+          <div class="tlbody">
+            <div class="tlhead"><h4>Hardening</h4><span class="tltime">contínuo</span></div>
+            <p>Testes de isolamento cross-tenant, logs com <code>tenant_id</code>, limite de pool Mongo por volume de tenants, revisão de TTL de cache.</p>
+          </div>
+        </div>
       </div>
-    </div>
 
-  </div>
+      <h2 class="sec">Riscos</h2>
+      <div class="twrap">
+        <table>
+          <tr><th style="width:90px">Risco</th><th>Descrição</th><th>Mitigação</th></tr>
+          <tr><td><span class="pill risk">alto</span></td><td>Cache mal chaveado (token Proteo, tipos de documento, templates) vaza dado entre clientes</td><td>Chave de cache sempre prefixada por <code>tenant_id</code>; testes de isolamento automatizados na Fase 1</td></tr>
+          <tr><td><span class="pill risk">alto</span></td><td>Credencial do cliente reaproveitada para chamada de serviço Sherlock→Extrator não funciona (hash irreversível)</td><td>Campo <code>service_auth</code> dedicado (aba Tenants)</td></tr>
+          <tr><td><span class="pill adjust">médio</span></td><td>Um <code>MongoClient</code> por tenant multiplica conexões abertas no processo</td><td>Pool com cache LRU + TTL; monitorar à medida que a base cresce</td></tr>
+          <tr><td><span class="pill adjust">médio</span></td><td>Fila SQS compartilhada — cliente de volume alto atrasa os demais</td><td>Campo <code>fila_prioridade</code> já na config do tenant; evoluir para fila dedicada se necessário</td></tr>
+          <tr><td><span class="pill adjust">médio</span></td><td>Veredito automático de negativa sem revisão humana em casos de baixa confiança</td><td>Campo <code>severidade</code> do motor de regras força <code>revisao</code> abaixo de um limiar — decidir o limiar antes de ir ao ar</td></tr>
+        </table>
+      </div>
+    </section>
 
-  <!-- =========================================================== -->
-  <!-- PARTE 3: RESPOSTA DO SHERLOCK -->
-  <!-- =========================================================== -->
-  <div class="section-title">Parte 3 — O que o Sherlock devolve</div>
-  <span class="when when-each">📬 Resposta de cada análise</span>
-
-  <div class="code-wrap"><pre>{
-  <span class="c-key">"sinistro_id"</span>: <span class="c-str">"SIN-2024-99887"</span>,
-  <span class="c-key">"veredito"</span>: <span class="c-str">"negado"</span>,           <span class="c-comment">// coberto | negado | pendente</span>
-  <span class="c-key">"confianca"</span>: <span class="c-num">0.94</span>,              <span class="c-comment">// 0 a 1 — score do modelo</span>
-
-  <span class="c-key">"checagens"</span>: [
-    {
-      <span class="c-key">"regra"</span>: <span class="c-str">"vigencia-apolice"</span>,
-      <span class="c-key">"resultado"</span>: <span class="c-str">"aprovado"</span>,
-      <span class="c-key">"motivo"</span>: <span class="c-str">"Data do sinistro dentro da vigência da apólice"</span>
-    },
-    {
-      <span class="c-key">"regra"</span>: <span class="c-str">"esporte-radical-exclusao"</span>,
-      <span class="c-key">"resultado"</span>: <span class="c-str">"reprovado"</span>,
-      <span class="c-key">"motivo"</span>: <span class="c-str">"Relato do segurado indica prática de motocross, coberta pela exclusão §4.2 das condições gerais"</span>,
-      <span class="c-key">"clausula_ref"</span>: <span class="c-str">"§4.2 — Exclusões por atividade de risco"</span>
-    },
-    {
-      <span class="c-key">"regra"</span>: <span class="c-str">"valor-limite"</span>,
-      <span class="c-key">"resultado"</span>: <span class="c-str">"aprovado"</span>,
-      <span class="c-key">"motivo"</span>: <span class="c-str">"Valor reclamado R$18.500 dentro do limite de R$120.000"</span>
-    }
-  ],
-
-  <span class="c-key">"documentos_analisados"</span>: [
-    {
-      <span class="c-key">"extrator_ref"</span>: <span class="c-str">"64f3a1b2c8d9e0f1a2b3c4d5"</span>,
-      <span class="c-key">"tipo"</span>: <span class="c-str">"boletim_ocorrencia"</span>,
-      <span class="c-key">"valido"</span>: <span class="c-bool">true</span>,
-      <span class="c-key">"inconsistencias"</span>: [<span class="c-str">"Endereço no BO difere 8km do endereço do sinistro"</span>]
-    }
-  ],
-
-  <span class="c-key">"auditoria"</span>: {
-    <span class="c-key">"modelo_versao"</span>: <span class="c-str">"sherlock-v2.1"</span>,
-    <span class="c-key">"config_versao"</span>: <span class="c-str">"seg-porto-001-v3"</span>,
-    <span class="c-key">"condicoes_gerais_ref"</span>: <span class="c-str">"auto-premium-v2-2024"</span>,
-    <span class="c-key">"processado_em"</span>: <span class="c-str">"2024-09-16T09:05:12Z"</span>,
-    <span class="c-key">"duracao_ms"</span>: <span class="c-num">1843</span>
-  }
-}</pre></div>
-
-  <div class="note">
-    <strong>Reprodutibilidade:</strong> Os campos <code>modelo_versao</code> e <code>config_versao</code> garantem que uma negativa pode ser reavaliada meses depois com exatamente a mesma configuração — essencial para disputas e auditorias regulatórias.
-  </div>
-
+  </main>
 </div>
-</body>
-</html>
+
+<script>
+function go(id){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.rail-item').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('p-'+id).classList.add('active');
+  document.querySelector('.rail-item[data-p="'+id+'"]').classList.add('active');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+document.querySelectorAll('.rail-item').forEach(function(btn){
+  btn.addEventListener('click', function(){ go(btn.getAttribute('data-p')); });
+});
+</script>
